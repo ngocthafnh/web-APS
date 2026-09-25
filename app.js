@@ -120,7 +120,7 @@ $('#view-bonus').innerHTML=`<div class="hero-row"><p class="intro">Theo dõi gi�
 
 function rAlerts(){
   let bar=$('#alert-bar');if(!bar){bar=document.createElement('div');bar.id='alert-bar';$('.topbar').after(bar)}
-  bar.innerHTML=alerts().map(s=>`<div class="alert ${s.pct>1?'over':'warn'}"><span><b>${esc(s.p)}</b>${L.managers[s.p]?` (QL ${esc(L.managers[s.p])})`:''}: ${s.pct>1?'ĐÃ VƯỢT':'sắp hết'} ngân sách giờ (${fmtHours(s.used)}/${fmtHours(s.budget)} — ${Math.round(s.pct*100)}%)${s.done?'':', chưa hoàn thành'}.</span>${L.reported[s.p]?`<small>Đã báo công ty ${L.reported[s.p]}</small>`:`<button class="action-btn" data-report="${esc(s.p)}">Báo công ty</button>`}</div>`).join('');
+  bar.innerHTML=alerts().map(s=>`<div class="alert ${s.pct>1?'over':'warn'}"><span class="alert-message"><i class="alert-icon" aria-hidden="true">⚠</i><span><b>${esc(s.p)}</b>${L.managers[s.p]?` (QL ${esc(L.managers[s.p])})`:''}: ${s.pct>1?'ĐÃ VƯỢT':'sắp hết'} ngân sách giờ (${fmtHours(s.used)}/${fmtHours(s.budget)} — ${Math.round(s.pct*100)}%)${s.done?'':', chưa hoàn thành'}.</span></span>${L.reported[s.p]?`<small>Đã báo công ty ${L.reported[s.p]}</small>`:`<button class="action-btn" data-report="${esc(s.p)}">Báo công ty</button>`}</div>`).join('');
 }
 function rAssign(){
   const ps=[...new Set([...Object.keys(L.budgets),...data.tasks.map(t=>t.project)])],sel=$('#sg-project'),v=sel.value;
@@ -263,13 +263,19 @@ document.body.classList.add(isMgr?'role-manager':'role-employee');
 if(!isMgr)document.body.classList.add('no-seeall');   // ẩn banner cảnh báo
 if(!can('edit'))document.body.classList.add('no-edit'); // ẩn form thêm việc/nhân viên, nút xóa, nút đặt lại
 document.querySelectorAll('.nav-item').forEach(b=>{if(!allowed(b.dataset.view))b.style.display='none'});
-{const wrap=$('#reset-data').parentElement,chip=document.createElement('div'),out=document.createElement('button');
+{const sidebar=document.querySelector('.sidebar'),toggle=document.querySelector('#sidebar-toggle');
+ toggle.onclick=()=>{const open=sidebar.classList.toggle('mobile-open');toggle.setAttribute('aria-expanded',String(open))};
+ document.querySelectorAll('.nav-item').forEach(item=>item.addEventListener('click',()=>{sidebar.classList.remove('mobile-open');toggle.setAttribute('aria-expanded','false')}))}
+{const wrap=$('#reset-data').parentElement,chip=document.createElement('div'),menu=document.createElement('div'),menuButton=document.createElement('button'),menuItems=document.createElement('div'),out=document.createElement('button');
  chip.className='user-chip';chip.innerHTML=`<span>👤 <b>${esc(SES.name)}</b> · ${ROLE[SES.role]||''}</span>`;
- out.id='logout';out.className='outline-btn';out.textContent='Đăng xuất';
+ menu.className='account-menu';menuButton.className='account-menu-button';menuButton.type='button';menuButton.setAttribute('aria-expanded','false');menuButton.setAttribute('aria-label','Mở menu tài khoản');menuButton.innerHTML='<span class="account-menu-icon">⚙</span>';menuItems.className='account-menu-items';
+ const reset=$('#reset-data');reset.classList.add('account-menu-item');reset.innerHTML='<span class="menu-item-icon">↻</span><span>Đặt lại dữ liệu mẫu</span>';
+ out.id='logout';out.className='account-menu-item';out.innerHTML='<span class="menu-item-icon">⇥</span><span>Đăng xuất</span>';
  out.onclick=()=>{if(!confirm('Đăng xuất khỏi hệ thống?'))return;logA('login','Đăng xuất');unpresence();sessionStorage.removeItem(SES_K);localStorage.removeItem(SES_K);location.replace('login.html')};
  // Nút đổi mật khẩu của chính mình
- const pw=document.createElement('button');pw.id='chpw';pw.className='outline-btn';pw.textContent='Đổi mật khẩu';pw.onclick=()=>changeOwnPassword();
- wrap.prepend(chip);wrap.append(pw,out)}
+ const pw=document.createElement('button');pw.id='chpw';pw.className='account-menu-item';pw.type='button';pw.innerHTML='<span class="menu-item-icon">🔒</span><span>Đổi mật khẩu</span>';pw.onclick=()=>changeOwnPassword();
+ menuItems.append(reset,pw,out);menu.append(menuButton,menuItems);menuButton.onclick=()=>{const open=menu.classList.toggle('open');menuButton.setAttribute('aria-expanded',String(open))};document.addEventListener('click',event=>{if(!menu.contains(event.target)){menu.classList.remove('open');menuButton.setAttribute('aria-expanded','false')}});
+ wrap.prepend(chip);wrap.append(menu)}
 $('#team-list').insertAdjacentHTML('beforebegin','<div id="my-offers"></div>');
 const rOffers=()=>{const el=$('#my-offers');if(!el||isMgr)return;const mine=L.offers.map((o,i)=>({o,i})).filter(x=>x.o.member===SES.member);
   el.innerHTML=mine.length?`<div class="section-heading"><div><h2>Đề xuất dành cho bạn</h2><p>Công việc phù hợp với quỹ giờ trống của bạn — bạn có muốn nhận không?</p></div></div>`+mine.map(({o,i})=>`<div class="cap-row"><div><strong>${esc(o.task.name)}</strong><small>${esc(o.task.project)} · ${fmtHours(o.task.expected)}</small></div><span></span><span><button class="action-btn" data-accept="${i}">Nhận</button> <button class="outline-btn" data-reject="${i}">Từ chối</button></span></div>`).join('')+'<div style="height:22px"></div>':''};

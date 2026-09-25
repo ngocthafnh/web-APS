@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 190" role="img" aria-labelledby="title desc">
+  <title id="title">APS Project Management QS</title>
+  <desc id="desc">APS Project Management QS logo with a golden dotted arrow.</desc>
+  <rect width="620" height="190" rx="12" fill="#fffdf9"/>
+  <g fill="#860019" font-family="Arial, sans-serif" font-weight="800">
+    <text x="30" y="108" font-size="105" letter-spacing="-7">APS</text>
+    <text x="31" y="143" font-size="24" font-weight="500" letter-spacing=".5">PROJECT MANAGEMENT | QS</text>
+  </g>
+  <g fill="#f2a900">
+    <circle cx="493" cy="43" r="9"/><circle cx="517" cy="55" r="11"/><circle cx="540" cy="69" r="13"/><circle cx="564" cy="84" r="15"/><circle cx="588" cy="98" r="17"/>
+    <circle cx="489" cy="72" r="8"/><circle cx="514" cy="82" r="10"/><circle cx="539" cy="96" r="12"/><circle cx="564" cy="108" r="14"/>
+    <circle cx="489" cy="103" r="8"/><circle cx="514" cy="112" r="10"/><circle cx="539" cy="122" r="12"/><circle cx="564" cy="132" r="14"/>
+    <circle cx="493" cy="135" r="9"/><circle cx="517" cy="145" r="11"/><circle cx="540" cy="153" r="13"/>
+    <circle cx="481" cy="28" r="6"/><circle cx="475" cy="161" r="6"/>
+  </g>
+</svg>

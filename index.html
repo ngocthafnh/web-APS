@@ -79,8 +79,9 @@
 <body>
   <div class="app-shell">
     <aside class="sidebar">
-      <div class="brand"><span class="brand-mark">APS</span><span>APS</span></div>
+      <div class="brand"><img class="brand-logo" src="logo-aps.svg" alt="APS Project Management QS"></div>
       <div class="sidebar-label">QUẢN LÝ THI CÔNG</div>
+      <button id="sidebar-toggle" class="sidebar-toggle" type="button" aria-label="Mở menu quản lý thi công" aria-expanded="false" aria-controls="main-nav"><span aria-hidden="true">☰</span></button>
       <nav id="main-nav" class="main-nav" aria-label="Điều hướng chính">
         <button class="nav-item" data-view="me"><span class="nav-icon">☀</span> Trang của tôi</button>
         <button class="nav-item active" data-view="team"><span class="nav-icon">◒</span> Nhân sự</button>
@@ -142,7 +143,9 @@
       <section id="view-reports" class="view">
         <div class="hero-row"><div><p class="intro">Tổng hợp hiệu quả của dự án và đội ngũ.</p></div><div class="date-control">Kỳ báo cáo: <strong id="report-view-date">23/09/2026</strong></div></div>
         <div id="report-metrics" class="metric-grid"></div>
-        <div class="report-grid"><div class="panel"><div class="panel-title"><div><h2>Hiệu quả theo dự án</h2><p>Thời gian thực tế so với kế hoạch.</p></div></div><div id="project-report"></div></div><div class="panel"><div class="panel-title"><div><h2>Hiệu quả nhân sự</h2><p>Tổng hợp task đã hoàn thành.</p></div></div><div id="member-report"></div></div></div>
+        <div class="report-tabs" role="tablist"><button class="report-tab active" type="button" data-report-tab="project" role="tab" aria-selected="true">Hiệu quả theo dự án</button><button class="report-tab" type="button" data-report-tab="member" role="tab" aria-selected="false">Hiệu quả nhân sự</button></div>
+        <div class="report-panel active" id="project-report-panel" role="tabpanel"><div class="panel-title"><div><h2>Hiệu quả theo dự án</h2><p>Gantt công việc theo thứ tự hoàn thành.</p></div></div><div id="project-report"></div></div>
+        <div class="report-panel" id="member-report-panel" role="tabpanel" hidden><div class="panel-title"><div><h2>Hiệu quả nhân sự</h2><p>Tổng hợp task đã hoàn thành.</p></div></div><div id="member-report"></div></div>
       </section>
       <section id="view-assign" class="view"></section>
       <section id="view-bonus" class="view"></section>
@@ -254,13 +257,19 @@
       const projects=[...new Set(data.tasks.map(task=>task.project))];
       document.querySelector('#project-report').innerHTML=projects.map(project=>{
         const tasks=data.tasks.filter(task=>task.project===project),completed=tasks.filter(task=>task.status==='done').length,expected=tasks.reduce((sum,task)=>sum+task.expected,0),actual=tasks.filter(task=>task.status==='done').reduce((sum,task)=>sum+task.actual,0),percent=Math.round(completed/tasks.length*100);
-        return `<div class="report-line"><div class="report-line-top"><strong>${project}</strong><small>${completed}/${tasks.length} task hoàn thành</small></div><div class="project-task-bar">${tasks.map(task=>`<span class="${task.status==='done'?'completed':''}" title="${task.name} - ${statusLabel[task.status]}"></span>`).join('')}</div><div class="report-detail"><span>${percent}% hoàn thành</span><span class="${actual<=expected?'good':'late'}">${actual<=expected?'Sớm':'Trễ'} ${fmtHours(Math.abs(actual-expected))}</span></div><div class="project-task-list">${tasks.map(task=>`<div class="project-task-item"><i class="task-status-dot ${task.status==='done'?'completed':''}"></i><div><strong>${task.name}</strong><small>${task.assignee} · ${statusLabel[task.status]}</small></div></div>`).join('')}</div></div>`;
+        return `<div class="report-line"><div class="report-line-top"><strong>${project}</strong><small>${completed}/${tasks.length} task hoàn thành</small></div><div class="project-task-bar">${tasks.map(task=>`<span class="${task.status==='done'?'completed':''}" title="${task.name} - ${statusLabel[task.status]}"></span>`).join('')}</div><div class="report-detail"><span>${percent}% hoàn thành</span><span class="${actual<=expected?'good':'late'}">${actual<=expected?'Sớm':'Trễ'} ${fmtHours(Math.abs(actual-expected))}</span></div><div class="gantt-list">${tasks.map(task=>`<div class="gantt-row ${task.status==='done'?'completed':''}"><div class="gantt-task"><i class="gantt-node"></i><div><strong>${task.name}</strong><small>${task.assignee} · ${statusLabel[task.status]}</small></div></div><div class="gantt-track"><span class="gantt-bar" style="width:${Math.max(18,Math.min(100,task.expected/Math.max(expected,1)*100))}%"></span><small>${fmtHours(task.expected)}</small></div></div>`).join('')}</div></div>`;
       }).join('');
       document.querySelector('#member-report').innerHTML=data.members.map(member=>{
         const tasks=data.tasks.filter(task=>task.assignee===member.name),completed=tasks.filter(task=>task.status==='done');
         return `<div class="report-line"><div class="report-line-top"><strong>${member.name}</strong><small>${completed.length} task hoàn thành</small></div><div class="member-task-list">${tasks.length?tasks.map(task=>`<div class="member-task-item ${task.status==='done'?'completed':'incomplete'}"><i class="task-status-dot ${task.status==='done'?'completed':''}"></i><div><strong>${task.name}</strong><small>${task.project}</small></div><span class="task-state">${task.status==='done'?'Hoàn thành':'Chưa hoàn thành'}</span></div>`).join(''):'<div class="employee-empty">Chưa có task được giao.</div>'}</div></div>`;
       }).join('');
     };
+    document.querySelectorAll('[data-report-tab]').forEach(tab=>tab.addEventListener('click',()=>{
+      const selected=tab.dataset.reportTab;
+      document.querySelectorAll('[data-report-tab]').forEach(item=>{const active=item===tab;item.classList.toggle('active',active);item.setAttribute('aria-selected',String(active))});
+      document.querySelector('#project-report-panel').hidden=selected!=='project';
+      document.querySelector('#member-report-panel').hidden=selected!=='member';
+    }));
     renderReports=()=>{baseRenderReports();renderReportTaskDetails()};
   </script>
 </body>
