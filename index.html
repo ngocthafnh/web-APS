@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>APS | Theo dõi thi công</title>
+  <script>if(!(sessionStorage.getItem('buildflow-session')||localStorage.getItem('buildflow-session')))location.replace('login.html')</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .task-form{background:var(--white);border:1px solid var(--line);border-radius:7px;padding:18px 20px;margin-bottom:28px}.form-heading{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}.form-heading h2{font:600 22px 'Barlow Condensed';margin:0}.form-heading p{font-size:12px;color:var(--muted);margin:4px 0 0}.form-grid{display:grid;grid-template-columns:1.2fr 1.5fr 1.2fr .7fr 1.2fr .8fr;gap:10px}.form-grid label{font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.4px}.form-grid input,.form-grid select{display:block;width:100%;margin-top:6px;border:1px solid var(--line);border-radius:5px;padding:10px 9px;background:#fbfcfa;color:var(--ink);font:12px 'DM Sans';min-width:0}@media(max-width:850px){.form-grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:520px){.task-form{padding:15px}.form-heading{align-items:flex-start;gap:12px;flex-direction:column}.form-grid{grid-template-columns:1fr}}
+  </style>
+  <style>
+    .task-form{padding:22px 24px;background:#fff}
+    .form-heading{padding-bottom:16px;border-bottom:1px solid var(--line)}
+    .form-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px 16px}
+    .form-grid input,.form-grid select{height:40px;padding:0 11px;background:#fff}
+    .form-grid input:focus,.form-grid select:focus{outline:2px solid rgba(239,108,58,.18);border-color:var(--orange)}
+    .phase-name{display:flex;align-items:center;gap:8px}
+    .phase-name span{margin-right:2px}
+    .phase-name small{color:var(--muted);font-size:10px;font-weight:500;padding-left:8px;border-left:1px solid var(--line)}
+    .task-row{min-height:66px}
+    .task-name strong{font-weight:600}
+    @media(max-width:850px){.form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:520px){.task-form{padding:17px}.form-grid{grid-template-columns:1fr}.phase-name{align-items:flex-start;flex-wrap:wrap;gap:4px}.phase-name small{width:100%;padding-left:0;border-left:0}}
+  </style>
+  <style>
+    .person-tasks{min-width:220px;display:grid;gap:5px}
+    .person-task{border-left:2px solid var(--orange);padding-left:9px;line-height:1.2}
+    .person-task strong{display:block;font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .person-task small{display:block;color:var(--muted);font-size:10px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .person-task.empty{border-left-color:var(--line);color:var(--muted);font-size:11px}
+    @media(max-width:1100px){.person-row{grid-template-columns:190px 85px 1fr 150px}.person-tasks{min-width:150px}}
+    @media(max-width:850px){.person-row{grid-template-columns:1fr 80px}.person-tasks{grid-column:1/-1;grid-row:2}.person-row .progress-wrap{grid-row:3}.person-row .action-btn{grid-column:2;grid-row:1}}
+  </style>
+  <style>
+    .form-grid select#task-assignee{font-family:'DM Sans',sans-serif;font-size:13px;font-weight:400;min-width:250px}
+    .form-grid select#task-assignee option{font-family:'DM Sans',sans-serif;font-size:13px;font-weight:400}
+    .person strong,.person small{font-size:13px}
+    .person small{margin-top:3px}
+    @media(max-width:1100px){.form-grid select#task-assignee{min-width:0}}
+  </style>
+  <style>
+    .form-heading h2,.form-grid label{font-family:'DM Sans',sans-serif;font-style:normal}
+    .form-heading h2{font-size:22px;font-weight:700;line-height:1.2;letter-spacing:0}
+    .form-grid label{font-size:11px;font-weight:700;line-height:1.2;letter-spacing:.5px}
+    .form-grid select#task-assignee{padding-left:11px;padding-right:38px;text-overflow:ellipsis;white-space:nowrap;overflow:hidden}
+  </style>
+  <style>
+    .form-grid input,.form-grid select,.form-grid input::placeholder{font-family:'DM Sans',sans-serif;font-size:13px;font-weight:400;font-style:normal;letter-spacing:0;line-height:1.2}
+    .form-grid input::placeholder{color:#718087;opacity:1}
+  </style>
+  <style>
+    .employee-form{margin-bottom:28px}.employee-grid{grid-template-columns:1.3fr 1.3fr .8fr}
+    .employee-list{display:grid;gap:12px}.employee-card{background:var(--white);border:1px solid var(--line);border-radius:7px;padding:18px 20px}.employee-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding-bottom:15px;border-bottom:1px solid var(--line)}.employee-identity{display:flex;align-items:center;gap:12px}.employee-identity strong{display:block;font-size:14px}.employee-identity small{display:block;color:var(--muted);font-size:11px;margin-top:3px}.employee-live{text-align:right;font-size:11px;color:var(--muted)}.employee-live strong{display:block;color:var(--green);font-size:13px}.employee-live .offline{color:var(--muted)}.employee-summary{display:grid;grid-template-columns:160px 1fr 180px;gap:20px;padding-top:16px}.employee-hours strong{display:block;font:600 23px 'Barlow Condensed'}.employee-hours small,.employee-task-meta{display:block;color:var(--muted);font-size:11px;margin-top:3px}.employee-tasks{display:grid;gap:8px}.employee-task{display:grid;grid-template-columns:1fr 110px 70px;gap:12px;align-items:center;border-left:2px solid var(--orange);padding-left:10px}.employee-task-name strong{display:block;font-size:12px}.employee-task-name small{display:block;color:var(--muted);font-size:10px;margin-top:3px}.employee-task-time{font-size:11px;color:var(--muted)}.employee-task-time strong{display:block;color:var(--ink);font-size:12px}.employee-task-delta{font-size:10px;font-weight:700;padding:5px 6px;border-radius:4px;text-align:center}.employee-task-delta.good{background:var(--green-soft);color:var(--green)}.employee-task-delta.late{background:var(--red-soft);color:var(--red)}.employee-task-delta.pending{background:var(--amber-soft);color:var(--amber)}.employee-empty{color:var(--muted);font-size:12px;padding:8px 0}.employee-progress{align-self:center}.employee-progress .progress-text{display:block;margin-top:7px;text-align:left}.employee-card .avatar{flex:0 0 auto}@media(max-width:850px){.employee-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.employee-summary{grid-template-columns:1fr}.employee-live{text-align:left}.employee-task{grid-template-columns:1fr 90px 65px}}@media(max-width:520px){.employee-grid{grid-template-columns:1fr}.employee-card{padding:15px}.employee-card-head{flex-direction:column}.employee-task{grid-template-columns:1fr;gap:4px}.employee-task-delta{justify-self:start}}
+  </style>
+  <style>
+    .global-date{display:flex;align-items:center;gap:8px;margin-top:7px}.date-nav{border:1px solid var(--line);background:var(--white);color:var(--muted);border-radius:5px;width:28px;height:28px;cursor:pointer;font-size:16px}.date-nav:hover{border-color:var(--orange);color:var(--orange)}.date-nav.today{width:auto;padding:0 9px;font-size:11px;font-family:'DM Sans',sans-serif}.global-date strong{font-size:12px;min-width:82px;text-align:center}.delete-member{border:1px solid #f0cbc6;background:var(--red-soft);color:var(--red);border-radius:5px;padding:8px 10px;font:600 11px 'DM Sans';cursor:pointer}.delete-member:hover{background:#ffe1de}.employee-identity-wrap{display:flex;align-items:center;gap:14px}.employee-card-head .delete-member{margin-left:auto}@media(max-width:520px){.global-date strong{min-width:70px}.date-nav.today{display:none}.employee-card-head .delete-member{padding:7px}.employee-identity-wrap{align-items:flex-start}}
+  </style>
+  <style>
+    .sidebar{position:sticky;top:0;height:100vh;min-height:100vh;align-self:flex-start;overflow-y:auto;overflow-x:hidden}
+    .sidebar,.sidebar-label,.sidebar-foot,.nav-item{font-family:'DM Sans',sans-serif;font-style:normal}
+    .sidebar-label{font-size:10px;font-weight:700;line-height:1.2;letter-spacing:1.2px}
+    .nav-item{font-size:13px;font-weight:500;line-height:1.2;letter-spacing:0}
+    .sidebar-foot{font-size:11px;font-weight:400;line-height:1.2}
+    @media(max-width:850px){.sidebar{position:sticky;height:100vh;min-height:100vh}}
+  </style>
+  <style>
+    .project-task-bar{display:flex;gap:4px;height:10px;background:#edf0ed;border-radius:99px;overflow:hidden;margin:12px 0 10px}.project-task-bar span{flex:1;background:#d7ddd9;border-radius:3px}.project-task-bar span.completed{background:var(--green)}.project-task-list{display:grid;gap:7px;margin-top:10px}.project-task-item,.member-task-item{display:flex;align-items:flex-start;gap:7px;font-size:11px;line-height:1.3}.task-status-dot{width:7px;height:7px;border-radius:50%;background:#b9c2bd;flex:0 0 auto;margin-top:4px}.task-status-dot.completed{background:var(--green)}.project-task-item strong,.member-task-item strong{font-size:11px;font-weight:600}.project-task-item small,.member-task-item small{display:block;color:var(--muted);font-size:10px;margin-top:2px}.member-task-list{display:grid;gap:7px;margin-top:9px}.member-task-item{border-left:2px solid #d7ddd9;padding-left:9px}.member-task-item.completed{border-left-color:var(--green)}.member-task-item.incomplete{border-left-color:var(--amber)}.member-task-item .task-state{margin-left:auto;color:var(--muted);font-size:10px;white-space:nowrap}.member-task-item.completed .task-state{color:var(--green)}.member-task-item.incomplete .task-state{color:var(--amber)}
+  </style>
+  <style>
+    :root{--ink:#14242a;--muted:#5e6b70}
+    body{color:var(--ink)}
+    .intro,.section-heading p,.panel-title p,.metric-label,.metric-note,.hours small,.person small,.task-name small,.task-time small,.employee-task-name small,.employee-task-time,.employee-task-meta{color:var(--muted)}
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand"><span class="brand-mark">APS</span><span>APS</span></div>
+      <div class="sidebar-label">QUẢN LÝ THI CÔNG</div>
+      <nav id="main-nav" class="main-nav" aria-label="Điều hướng chính">
+        <button class="nav-item" data-view="me"><span class="nav-icon">☀</span> Trang của tôi</button>
+        <button class="nav-item active" data-view="team"><span class="nav-icon">◒</span> Nhân sự</button>
+        <button class="nav-item" data-view="employees"><span class="nav-icon">♙</span> Quản lý nhân viên</button>
+        <button class="nav-item" data-view="tasks"><span class="nav-icon">▦</span> Tiến độ công việc</button>
+        <button class="nav-item" data-view="reports"><span class="nav-icon">◈</span> Tổng quan dự án</button>
+        <button class="nav-item" data-view="assign"><span class="nav-icon">✦</span> Phân công thông minh</button>
+        <button class="nav-item" data-view="bonus"><span class="nav-icon">◆</span> Thưởng &amp; cảnh báo</button>
+        <button class="nav-item" data-view="audit"><span class="nav-icon">◉</span> Nhật ký hoạt động</button>
+        <button class="nav-item" data-view="admin"><span class="nav-icon">⚙</span> Quản trị tài khoản</button>
+      </nav>
+      <div class="sidebar-foot"><div class="sync-dot"></div><span>Dữ liệu lưu trên máy</span></div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar"><div><div class="eyebrow">THỨ TƯ, 23 THÁNG 09, 2026</div><h1 id="page-title">Nhân sự</h1><div class="global-date"><button class="date-nav" id="date-prev" aria-label="Ngày trước">‹</button><strong id="global-date-label">23/09/2026</strong><button class="date-nav" id="date-next" aria-label="Ngày sau">›</button><button class="date-nav today" id="date-today">Hôm nay</button></div></div><button class="outline-btn" id="reset-data">↻ Đặt lại dữ liệu mẫu</button></header>
+
+      <section id="view-me" class="view"></section>
+      <section id="view-team" class="view active-view">
+        <div class="hero-row"><div><p class="intro">Theo dõi giờ làm và nhiệm vụ được giao trong ngày.</p></div><div class="date-control">‹ <strong id="team-view-date">23/09/2026</strong> ›</div></div>
+        <div class="metric-grid" id="team-metrics"></div>
+        <div class="section-heading"><div><h2>Danh sách nhân sự</h2><p>Chọn bắt đầu hoặc kết thúc để ghi nhận thời gian thực tế.</p></div><span class="live-label"><i></i> CẬP NHẬT TRỰC TIẾP</span></div>
+        <div id="team-list" class="team-list"></div>
+      </section>
+
+      <section id="view-tasks" class="view">
+        <div class="hero-row"><div><p class="intro">Các giai đoạn được sắp theo thứ tự tiến độ công trình.</p></div><select class="select-control" id="project-filter"><option value="all">Tất cả dự án</option></select></div>
+        <form id="task-form" class="task-form">
+          <div class="form-heading"><div><h2>Thêm công việc</h2><p>Tạo task mới và giao ngay cho một thành viên.</p></div><button class="action-btn" type="submit">＋ Thêm task</button></div>
+          <div class="form-grid">
+            <label>Tên dự án<input id="task-project" required placeholder="Ví dụ: Nhà phố Thảo Điền"></label>
+            <label>Tên công việc<input id="task-name" required placeholder="Ví dụ: Đổ bê tông sàn tầng 1"></label>
+            <label>Giai đoạn<input id="task-phase" required placeholder="Ví dụ: Kết cấu tầng 1"></label>
+            <label>Mã giai đoạn<input id="task-phase-number" required value="01" placeholder="01"></label>
+            <label>Người nhận<select id="task-assignee" required></select></label>
+            <label>Thời gian dự kiến (giờ)<input id="task-expected" type="number" min="0.5" step="0.5" required value="4"></label>
+          </div>
+        </form>
+        <div class="metric-grid" id="task-metrics"></div>
+        <div class="section-heading"><div><h2>Tiến độ công việc</h2><p>So sánh thời gian dự kiến với thời gian đã thực hiện.</p></div><div class="legend"><span><i class="dot green"></i> Đúng tiến độ</span><span><i class="dot amber"></i> Đang làm</span><span><i class="dot red"></i> Trễ hạn</span></div></div>
+        <div id="task-table" class="task-board"></div>
+      </section>
+
+      <section id="view-employees" class="view">
+        <div class="hero-row"><div><p class="intro">Quản lý nhân sự, task đảm nhận và thời gian làm việc thực tế.</p></div><div class="date-control">Giờ hệ thống: <strong id="employee-live-now">--:--:--</strong></div></div>
+        <form id="employee-form" class="task-form employee-form">
+          <div class="form-heading"><div><h2>Thêm nhân sự</h2><p>Tạo hồ sơ nhân viên để giao task và theo dõi giờ công.</p></div><button class="action-btn" type="submit">＋ Thêm nhân sự</button></div>
+          <div class="form-grid employee-grid">
+            <label>Họ và tên<input id="employee-name" required placeholder="Ví dụ: Nguyễn Văn Bình"></label>
+            <label>Chức danh<input id="employee-role" required placeholder="Ví dụ: Kỹ sư kết cấu"></label>
+            <label>Giờ mục tiêu / ngày<input id="employee-hours" type="number" min="0.5" step="0.5" required value="8"></label>
+          </div>
+        </form>
+        <div class="metric-grid" id="employee-metrics"></div>
+        <div class="section-heading"><div><h2>Danh sách nhân viên</h2><p>Thời gian bắt đầu được lấy trực tiếp từ nút trên trang Nhân sự hôm nay.</p></div><span class="live-label"><i></i> ĐỒNG BỘ THỜI GIAN THỰC</span></div>
+        <div id="employee-list" class="employee-list"></div>
+      </section>
+
+      <section id="view-reports" class="view">
+        <div class="hero-row"><div><p class="intro">Tổng hợp hiệu quả của dự án và đội ngũ.</p></div><div class="date-control">Kỳ báo cáo: <strong id="report-view-date">23/09/2026</strong></div></div>
+        <div id="report-metrics" class="metric-grid"></div>
+        <div class="report-grid"><div class="panel"><div class="panel-title"><div><h2>Hiệu quả theo dự án</h2><p>Thời gian thực tế so với kế hoạch.</p></div></div><div id="project-report"></div></div><div class="panel"><div class="panel-title"><div><h2>Hiệu quả nhân sự</h2><p>Tổng hợp task đã hoàn thành.</p></div></div><div id="member-report"></div></div></div>
+      </section>
+      <section id="view-assign" class="view"></section>
+      <section id="view-bonus" class="view"></section>
+      <section id="view-audit" class="view"></section>
+      <section id="view-admin" class="view"></section>
+    </main>
+  </div>
+  <div id="toast" class="toast" role="status"></div>
+  <script src="app.js"></script>
+  <script>
+    const cleanRoleName=member=>{if(member.role==='Giám sát chất lượng')member.role='Giám sát'};
+    data.members.forEach(cleanRoleName);
+    initialData.members.forEach(cleanRoleName);
+    save();
+  </script>
+  <script>
+    const assigneeSelect=document.querySelector('#task-assignee');
+    assigneeSelect.innerHTML=data.members.map(member=>`<option value="${member.name}">${member.name} - ${member.role}</option>`).join('');
+    document.querySelector('#task-form').addEventListener('submit',event=>{
+      event.preventDefault();
+      const project=document.querySelector('#task-project').value.trim();
+      const name=document.querySelector('#task-name').value.trim();
+      const phaseName=document.querySelector('#task-phase').value.trim();
+      const phase=document.querySelector('#task-phase-number').value.trim();
+      const assignee=document.querySelector('#task-assignee').value;
+      const expected=Number(document.querySelector('#task-expected').value);
+      data.tasks.push({id:Date.now(),project,phase,phaseName,name,assignee,expected,actual:0,status:'todo'});
+      save();
+      event.target.reset();
+      document.querySelector('#task-phase-number').value='01';
+      document.querySelector('#task-expected').value='4';
+      renderTasks();
+      renderReports();
+      showToast(`Đã thêm task cho ${assignee}`);
+    });
+  </script>
+  <script>
+    const originalRenderTeam=renderTeam;
+    renderTeam=()=>{
+      originalRenderTeam();
+      document.querySelectorAll('.person-row').forEach(row=>{
+        const memberId=Number(row.querySelector('[data-member]').dataset.member);
+        const member=data.members.find(item=>item.id===memberId);
+        const memberTasks=data.tasks.filter(task=>task.assignee===member.name);
+        const taskSummary=document.createElement('div');
+        taskSummary.className='person-tasks';
+        taskSummary.innerHTML=memberTasks.length?memberTasks.map(task=>`<div class="person-task"><strong>${task.name}</strong><small>${task.project}</small></div>`).join(''):'<div class="person-task empty">Chưa có task được giao</div>';
+        row.querySelector('.hours').insertAdjacentElement('afterend',taskSummary);
+      });
+    };
+    renderTeam();
+  </script>
+  <script>
+    let employeeTimer;
+    const formatClock=value=>new Date(value).toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    const elapsedHours=startedAt=>startedAt?Math.max(0,(Date.now()-startedAt)/3600000):0;
+    const employeeActual=(task,member)=>task.actual||((task.status==='doing'&&member.active)?elapsedHours(member.startedAt):0);
+    const refreshAssignees=()=>{const select=document.querySelector('#task-assignee');if(select)select.innerHTML=data.members.map(member=>`<option value="${member.name}">${member.name} - ${member.role}</option>`).join('');};
+    function renderEmployees(){
+      const active=data.members.filter(member=>member.active).length;
+      const assigned=data.tasks.filter(task=>task.assignee).length;
+      document.querySelector('#employee-live-now').textContent=formatClock(Date.now());
+      document.querySelector('#employee-metrics').innerHTML=`<div class="metric"><div class="metric-label">TỔNG NHÂN SỰ</div><div class="metric-value">${data.members.length} người</div><div class="metric-note">Đang quản lý</div></div><div class="metric"><div class="metric-label">ĐANG TRONG CA</div><div class="metric-value">${active} người</div><div class="metric-note ${active?'positive':''}">${active?'Đang ghi nhận thời gian':'Chưa có người bắt đầu'}</div></div><div class="metric"><div class="metric-label">TASK ĐÃ GIAO</div><div class="metric-value">${assigned} task</div><div class="metric-note">Theo dữ liệu hiện tại</div></div><div class="metric"><div class="metric-label">GIỜ DỰ KIẾN</div><div class="metric-value">${fmtHours(data.tasks.reduce((sum,task)=>sum+task.expected,0))}</div><div class="metric-note">Tổng thời lượng task</div></div>`;
+      document.querySelector('#employee-list').innerHTML=data.members.map(member=>{
+        const tasks=data.tasks.filter(task=>task.assignee===member.name);
+        const done=tasks.filter(task=>task.status==='done').length;
+        const actual=tasks.reduce((sum,task)=>sum+employeeActual(task,member),0);
+        const expected=tasks.reduce((sum,task)=>sum+task.expected,0);
+        const percent=tasks.length?Math.round(done/tasks.length*100):0;
+        return `<article class="employee-card"><div class="employee-card-head"><div class="employee-identity"><div class="avatar">${member.initials}</div><div><strong>${member.name}</strong><small>${member.role} · Mục tiêu ${fmtHours(member.hours)}/ngày</small></div></div><div class="employee-live">${member.active?`<strong class="employee-started">Bắt đầu lúc ${formatClock(member.startedAt)}</strong><span>Đang làm ${fmtHours(elapsedHours(member.startedAt))}</span>`:'<strong class="offline">Chưa bắt đầu ca</strong><span>Nhấn bắt đầu ở trang Nhân sự hôm nay</span>'}</div></div><div class="employee-summary"><div class="employee-hours"><strong>${fmtHours(actual)} / ${fmtHours(expected)}</strong><small>giờ thực tế / dự kiến của task</small><div class="progress-bar" style="margin-top:12px"><b style="width:${percent}%"></b></div><span class="progress-text">${done}/${tasks.length} task hoàn thành</span></div><div class="employee-tasks">${tasks.length?tasks.map(task=>{const taskActual=employeeActual(task,member),delta=taskActual-task.expected;return `<div class="employee-task"><div class="employee-task-name"><strong>${task.name}</strong><small>${task.project}</small></div><div class="employee-task-time"><strong>${taskActual?fmtHours(taskActual):'—'} / ${fmtHours(task.expected)}</strong><span>thực tế / dự kiến</span></div><div class="employee-task-delta ${task.status==='todo'?'pending':delta<=0?'good':'late'}">${task.status==='todo'?'Chưa làm':delta<=0?`Sớm ${fmtHours(Math.abs(delta))}`:`Trễ ${fmtHours(delta)}`}</div></div>`}).join(''):'<div class="employee-empty">Chưa có task được giao.</div>'}</div><div class="employee-progress"><div class="metric-label">HIỆU SUẤT GIỜ</div><div class="metric-value">${expected?Math.round(actual/expected*100):0}%</div><div class="employee-task-meta">${actual<=expected?'Đang nhanh hơn kế hoạch':'Đang chậm hơn kế hoạch'}</div></div></div></article>`;
+      }).join('');
+    }
+    const currentRenderTeam=renderTeam;
+    renderTeam=()=>{currentRenderTeam();document.querySelectorAll('.person-row').forEach(row=>{const progress=row.querySelector('.progress-bar b'),text=row.querySelector('.progress-text');if(progress&&progress.style.width==='NaN%')progress.style.width='0%';if(text&&text.textContent==='0/0 task')text.textContent='0 task'});};
+    const originalToggleMember=toggleMember;
+    toggleMember=id=>{originalToggleMember(id);if(document.querySelector('#view-employees').classList.contains('active-view'))renderEmployees();};
+    const originalRender=render;
+    render=view=>{originalRender(view);if(view==='employees'){document.querySelector('#page-title').textContent='Quản lý nhân viên';renderEmployees();clearInterval(employeeTimer);employeeTimer=setInterval(renderEmployees,1000)}else clearInterval(employeeTimer)};
+    document.querySelector('#employee-form').addEventListener('submit',event=>{event.preventDefault();const name=document.querySelector('#employee-name').value.trim(),role=document.querySelector('#employee-role').value.trim(),hours=Number(document.querySelector('#employee-hours').value),initials=name.split(/\s+/).map(part=>part[0]).join('').slice(-2).toUpperCase();data.members.push({id:Date.now(),name,role,hours,done:0,tasks:0,initials,active:false});save();refreshAssignees();renderEmployees();event.target.reset();document.querySelector('#employee-hours').value='8';showToast(`Đã thêm nhân sự ${name}`)});
+    renderEmployees();
+  </script>
+  <script>
+    const appToday='2026-09-23';
+    let selectedDate=localStorage.getItem('buildflow-selected-date')||appToday;
+    let currentView='team';
+    const historyKey='buildflow-history';
+    const readHistory=()=>JSON.parse(localStorage.getItem(historyKey)||'{}');
+    const writeHistory=history=>localStorage.setItem(historyKey,JSON.stringify(history));
+    const cloneData=value=>JSON.parse(JSON.stringify(value));
+    const dateLabel=date=>new Date(`${date}T12:00:00`).toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric'});
+    const saveCurrentDate=()=>{const history=readHistory();history[selectedDate]=cloneData(data);writeHistory(history);save()};
+    const loadSelectedDate=()=>{const history=readHistory();if(history[selectedDate])data=history[selectedDate];else if(selectedDate!==appToday)data=cloneData(initialData);data.members.forEach(cleanRoleName);save();const label=dateLabel(selectedDate);document.querySelector('#global-date-label').textContent=label;document.querySelector('#team-view-date').textContent=label;document.querySelector('#report-view-date').textContent=label;};
+    const originalRenderWithEmployees=render;
+    render=view=>{currentView=view;originalRenderWithEmployees(view);if(view==='employees'){document.querySelector('#page-title').textContent='Quản lý nhân viên';renderEmployees();}};
+    const changeDate=offset=>{saveCurrentDate();const date=new Date(`${selectedDate}T12:00:00`);date.setDate(date.getDate()+offset);selectedDate=date.toISOString().slice(0,10);localStorage.setItem('buildflow-selected-date',selectedDate);loadSelectedDate();render(currentView);showToast(`Đang xem ngày ${dateLabel(selectedDate)}`)};
+    document.querySelector('#date-prev').onclick=()=>changeDate(-1);
+    document.querySelector('#date-next').onclick=()=>changeDate(1);
+    document.querySelector('#date-today').onclick=()=>{saveCurrentDate();selectedDate=appToday;localStorage.setItem('buildflow-selected-date',selectedDate);loadSelectedDate();render(currentView);showToast('Đã chuyển về hôm nay')};
+    const baseRenderEmployees=renderEmployees;
+    const decorateDeleteButtons=()=>document.querySelectorAll('.employee-card').forEach((card,index)=>{if(!card.querySelector('[data-delete-member]')){const button=document.createElement('button');button.className='delete-member';button.dataset.deleteMember=data.members[index].id;button.textContent='Xóa';card.querySelector('.employee-card-head').appendChild(button)}});
+    renderEmployees=()=>{baseRenderEmployees();decorateDeleteButtons()};
+    document.querySelector('#employee-list').addEventListener('click',event=>{const button=event.target.closest('[data-delete-member]');if(!button)return;const member=data.members.find(item=>item.id===Number(button.dataset.deleteMember));if(!member||!window.confirm(`Xóa nhân sự ${member.name}?`))return;data.tasks.forEach(task=>{if(task.assignee===member.name)task.assignee='Chưa phân công'});data.members=data.members.filter(item=>item.id!==member.id);saveCurrentDate();refreshAssignees();renderTeam();renderEmployees();showToast(`Đã xóa nhân sự ${member.name}`)});
+    loadSelectedDate();
+    render(currentView);
+  </script>
+  <script>
+    const baseRenderReports=renderReports;
+    const renderReportTaskDetails=()=>{
+      const projects=[...new Set(data.tasks.map(task=>task.project))];
+      document.querySelector('#project-report').innerHTML=projects.map(project=>{
+        const tasks=data.tasks.filter(task=>task.project===project),completed=tasks.filter(task=>task.status==='done').length,expected=tasks.reduce((sum,task)=>sum+task.expected,0),actual=tasks.filter(task=>task.status==='done').reduce((sum,task)=>sum+task.actual,0),percent=Math.round(completed/tasks.length*100);
+        return `<div class="report-line"><div class="report-line-top"><strong>${project}</strong><small>${completed}/${tasks.length} task hoàn thành</small></div><div class="project-task-bar">${tasks.map(task=>`<span class="${task.status==='done'?'completed':''}" title="${task.name} - ${statusLabel[task.status]}"></span>`).join('')}</div><div class="report-detail"><span>${percent}% hoàn thành</span><span class="${actual<=expected?'good':'late'}">${actual<=expected?'Sớm':'Trễ'} ${fmtHours(Math.abs(actual-expected))}</span></div><div class="project-task-list">${tasks.map(task=>`<div class="project-task-item"><i class="task-status-dot ${task.status==='done'?'completed':''}"></i><div><strong>${task.name}</strong><small>${task.assignee} · ${statusLabel[task.status]}</small></div></div>`).join('')}</div></div>`;
+      }).join('');
+      document.querySelector('#member-report').innerHTML=data.members.map(member=>{
+        const tasks=data.tasks.filter(task=>task.assignee===member.name),completed=tasks.filter(task=>task.status==='done');
+        return `<div class="report-line"><div class="report-line-top"><strong>${member.name}</strong><small>${completed.length} task hoàn thành</small></div><div class="member-task-list">${tasks.length?tasks.map(task=>`<div class="member-task-item ${task.status==='done'?'completed':'incomplete'}"><i class="task-status-dot ${task.status==='done'?'completed':''}"></i><div><strong>${task.name}</strong><small>${task.project}</small></div><span class="task-state">${task.status==='done'?'Hoàn thành':'Chưa hoàn thành'}</span></div>`).join(''):'<div class="employee-empty">Chưa có task được giao.</div>'}</div></div>`;
+      }).join('');
+    };
+    renderReports=()=>{baseRenderReports();renderReportTaskDetails()};
+  </script>
+</body>
+</html>

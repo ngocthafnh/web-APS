@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>APS | Đăng nhập</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="login-body">
+  <main class="login-shell">
+    <section class="login-art">
+      <div class="brand"><span class="brand-mark">APS</span><span>APS</span></div>
+      <div><h1>Theo dõi thi công<br>từng giờ công</h1><p>Quản lý nhân sự, tiến độ công việc và ngân sách giờ của từng công trình trên một màn hình.</p></div>
+      <div class="art-foot">Dữ liệu lưu trên máy · Phiên bản thử nghiệm</div>
+    </section>
+    <section class="login-panel">
+      <form id="login-form" class="login-card" autocomplete="on">
+        <h2>Đăng nhập</h2>
+        <p>Nhập tài khoản để vào hệ thống.</p>
+        <label>Tên đăng nhập<input id="lg-user" type="text" autocomplete="username" required autofocus></label>
+        <label>Mật khẩu<span class="pw"><input id="lg-pass" type="password" autocomplete="current-password" required><button type="button" id="lg-eye">Hiện</button></span></label>
+        <label class="lg-check"><input id="lg-remember" type="checkbox" checked> Ghi nhớ đăng nhập trên máy này</label>
+        <div id="lg-err" class="lg-err" role="alert"></div>
+        <button class="action-btn login-btn" type="submit">Đăng nhập</button>
+        <p class="lg-link">Chưa có tài khoản? <a href="register.html">Đăng ký</a></p>
+        <div class="demo-box">Tài khoản thử (mật khẩu <b>123456</b>): bấm để điền<br>
+          <button type="button" data-fill="admin">admin · Admin</button><button type="button" data-fill="sep">sep · Sếp</button><br><button type="button" data-fill="quanly">quanly · Quản lý</button><br>
+          <button type="button" data-fill="an">an</button><button type="button" data-fill="khoa">khoa</button><button type="button" data-fill="mai">mai</button><button type="button" data-fill="huy">huy</button> · Nhân viên</div>
+      </form>
+    </section>
+  </main>
+  <script>
+    const UK='buildflow-users',SK='buildflow-session',$=s=>document.querySelector(s);
+    // Băm mật khẩu (demo). Khi có backend thật phải băm/kiểm tra ở máy chủ.
+    const hash=s=>{let h1=0xdeadbeef,h2=0x41c6ce57;s='aps:'+s;for(let i=0,c;i<s.length;i++){c=s.charCodeAt(i);h1=Math.imul(h1^c,2654435761);h2=Math.imul(h2^c,1597334677)}h1=Math.imul(h1^(h1>>>16),2246822507)^Math.imul(h2^(h2>>>13),3266489909);h2=Math.imul(h2^(h2>>>16),2246822507)^Math.imul(h1^(h1>>>13),3266489909);return(4294967296*(2097151&h2)+(h1>>>0)).toString(36)};
+    // Tên phải trùng với tên trong danh sách nhân sự để liên kết đúng người
+    const seed=[['admin','Quản trị hệ thống','admin'],['sep','Giám đốc công ty','boss'],['quanly','Quản lý công ty','manager'],['an','Nguyễn Văn An','employee'],['khoa','Trần Minh Khoa','employee'],['mai','Lê Thị Mai','employee'],['huy','Phạm Quốc Huy','employee']].map(([u,name,role])=>({u,name,role,h:hash('123456')}));
+    {const cur=JSON.parse(localStorage.getItem(UK)||'[]');seed.forEach(s=>{if(!cur.find(x=>x.u===s.u))cur.push(s)});localStorage.setItem(UK,JSON.stringify(cur))} // thêm tài khoản mới vào dữ liệu đã có
+    const audit=(u,n,r,type,act,detail='')=>{try{const a=JSON.parse(localStorage.getItem('buildflow-audit')||'[]');a.push({t:Date.now(),u,n,r,type,act,detail});if(a.length>2000)a.splice(0,a.length-2000);localStorage.setItem('buildflow-audit',JSON.stringify(a))}catch{}};
+    if(sessionStorage.getItem(SK)||localStorage.getItem(SK))location.replace('index.html');
+    document.querySelectorAll('[data-fill]').forEach(b=>b.onclick=()=>{$('#lg-user').value=b.dataset.fill;$('#lg-pass').value='123456';$('#lg-err').textContent=''});
+    $('#lg-eye').onclick=e=>{const p=$('#lg-pass'),show=p.type==='password';p.type=show?'text':'password';e.target.textContent=show?'Ẩn':'Hiện'};
+    $('#login-form').addEventListener('submit',e=>{
+      e.preventDefault();const err=$('#lg-err'),lock=Number(localStorage.getItem('buildflow-lock')||0);
+      if(Date.now()<lock){err.textContent=`Nhập sai nhiều lần. Thử lại sau ${Math.ceil((lock-Date.now())/1000)} giây.`;return}
+      const u=$('#lg-user').value.trim().toLowerCase(),user=JSON.parse(localStorage.getItem(UK)).find(x=>x.u===u&&x.h===hash($('#lg-pass').value));
+      if(!user){audit(u||'?',u||'(trống)','','security','Đăng nhập thất bại',`Tên đăng nhập “${u}”`);const f=Number(sessionStorage.getItem('buildflow-fails')||0)+1;sessionStorage.setItem('buildflow-fails',f);
+        if(f>=5){localStorage.setItem('buildflow-lock',Date.now()+30000);sessionStorage.setItem('buildflow-fails',0);err.textContent='Nhập sai 5 lần. Tạm khóa 30 giây.'}
+        else err.textContent=`Sai tên đăng nhập hoặc mật khẩu (${f}/5).`;return}
+      // Chặn tài khoản chưa được duyệt hoặc đã bị khóa (tài khoản cũ không có trường status = đang hoạt động)
+      const st=user.status||'active';
+      if(st!=='active'){audit(user.u,user.name,user.role,'security','Đăng nhập bị chặn',st==='pending'?'Tài khoản chờ duyệt':'Tài khoản bị khóa');
+        err.textContent=st==='pending'?'Tài khoản đang chờ Admin duyệt.':'Tài khoản đã bị khóa. Vui lòng liên hệ Admin.';return}
+      sessionStorage.setItem('buildflow-fails',0);audit(user.u,user.name,user.role,'login','Đăng nhập');
+      const ses=JSON.stringify({u:user.u,name:user.name,role:user.role,t:Date.now()}),keep=$('#lg-remember').checked;
+      sessionStorage.removeItem(SK);localStorage.removeItem(SK);(keep?localStorage:sessionStorage).setItem(SK,ses);
+      location.replace('index.html');
+    });
+  </script>
+</body>
+</html>

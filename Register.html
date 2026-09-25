@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>APS | Đăng ký tài khoản</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="login-body">
+  <main class="login-shell">
+    <section class="login-art">
+      <div class="brand"><span class="brand-mark">APS</span><span>APS</span></div>
+      <div><h1>Đăng ký tài khoản<br>mới</h1><p>Sau khi gửi đăng ký, Admin sẽ duyệt và cấp vai trò phù hợp. Bạn chỉ đăng nhập được sau khi được duyệt.</p></div>
+      <div class="art-foot">Dữ liệu lưu trên máy · Phiên bản thử nghiệm</div>
+    </section>
+    <section class="login-panel">
+      <form id="rg-form" class="login-card" autocomplete="off">
+        <h2>Đăng ký</h2>
+        <p>Điền thông tin để gửi yêu cầu tạo tài khoản.</p>
+        <label>Họ và tên<input id="rg-name" type="text" required placeholder="Ví dụ: Nguyễn Văn Bình"></label>
+        <label>Chức danh (không bắt buộc)<input id="rg-title" type="text" placeholder="Ví dụ: Thợ hàn"></label>
+        <label>Tên đăng nhập<input id="rg-user" type="text" required placeholder="chữ thường không dấu, 3-20 ký tự"></label>
+        <label>Mật khẩu<input id="rg-pass" type="password" required placeholder="Tối thiểu 6 ký tự"></label>
+        <label>Nhập lại mật khẩu<input id="rg-pass2" type="password" required></label>
+        <div id="rg-err" class="lg-err" role="alert"></div>
+        <button class="action-btn login-btn" type="submit">Gửi đăng ký</button>
+        <div id="rg-ok" class="lg-ok" hidden></div>
+        <p class="lg-link">Đã có tài khoản? <a href="login.html">Đăng nhập</a></p>
+      </form>
+    </section>
+  </main>
+  <script>
+    const UK='buildflow-users',AK='buildflow-audit',$=s=>document.querySelector(s);
+
+    // Băm mật khẩu (DEMO) — PHẢI GIỐNG HỆT hàm hash trong login.html và app.js,
+    // nếu khác thì đăng nhập sẽ luôn báo sai mật khẩu.
+    const hash=s=>{let h1=0xdeadbeef,h2=0x41c6ce57;s='aps:'+s;for(let i=0,c;i<s.length;i++){c=s.charCodeAt(i);h1=Math.imul(h1^c,2654435761);h2=Math.imul(h2^c,1597334677)}h1=Math.imul(h1^(h1>>>16),2246822507)^Math.imul(h2^(h2>>>13),3266489909);h2=Math.imul(h2^(h2>>>16),2246822507)^Math.imul(h1^(h1>>>13),3266489909);return(4294967296*(2097151&h2)+(h1>>>0)).toString(36)};
+
+    // Ghi một dòng vào nhật ký hoạt động (Admin/Sếp xem ở trang Nhật ký)
+    const audit=(u,n,r,type,act,detail='')=>{try{const a=JSON.parse(localStorage.getItem(AK)||'[]');a.push({t:Date.now(),u,n,r,type,act,detail});if(a.length>2000)a.splice(0,a.length-2000);localStorage.setItem(AK,JSON.stringify(a))}catch{}};
+
+    $('#rg-form').addEventListener('submit',e=>{
+      e.preventDefault();
+      const err=$('#rg-err');err.textContent='';
+      const name=$('#rg-name').value.trim(),title=$('#rg-title').value.trim(),u=$('#rg-user').value.trim().toLowerCase(),p1=$('#rg-pass').value,p2=$('#rg-pass2').value;
+
+      // --- Kiểm tra dữ liệu nhập ---
+      if(name.length<2){err.textContent='Vui lòng nhập họ và tên.';return}
+      if(!/^[a-z0-9._]{3,20}$/.test(u)){err.textContent='Tên đăng nhập 3-20 ký tự: chữ thường không dấu, số, dấu chấm hoặc gạch dưới.';return}
+      if(p1.length<6){err.textContent='Mật khẩu tối thiểu 6 ký tự.';return}
+      if(p1!==p2){err.textContent='Hai mật khẩu chưa khớp.';return}
+      const users=JSON.parse(localStorage.getItem(UK)||'[]');
+      if(users.some(x=>x.u===u)){err.textContent='Tên đăng nhập đã có người dùng.';return}
+
+      // --- Tạo tài khoản ở trạng thái CHỜ DUYỆT, vai trò mặc định thấp nhất (Nhân viên) ---
+      users.push({u,name,title,role:'employee',h:hash(p1),status:'pending',created:Date.now()});
+      localStorage.setItem(UK,JSON.stringify(users));
+      audit(u,name,'employee','add','Đăng ký tài khoản mới','Chờ Admin duyệt');
+
+      // --- Báo kết quả ---
+      [...e.target.querySelectorAll('label,button[type=submit]')].forEach(x=>x.hidden=true);
+      const ok=$('#rg-ok');ok.hidden=false;ok.textContent='Đã gửi đăng ký! Vui lòng chờ Admin duyệt rồi đăng nhập bằng tên đăng nhập '+u+'.';
+    });
+  </script>
+</body>
+</html>
