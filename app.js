@@ -47,7 +47,7 @@ function renderTasks(){
         <div class="phase-head"><div class="phase-name"><span>GIAI ĐOẠN ${phase}</span></div><div class="phase-meta">${rowsInPhase.length} công việc · ${groups.length} dự án</div></div>
         ${groupsHtml}
       </div>`;
-  }).join('');
+  }).join('')||'<div class="employee-empty">Bạn chưa được giao công việc nào.</div>';
 
   filter.onchange=renderTasks;
 }
@@ -250,7 +250,7 @@ SES.member=me.member||me.name;   // tên nhân sự được liên kết → dù
 
 const PERMS=loadPerms(),perm=PERMS[SES.role]||PERMS.employee,permSig=JSON.stringify(perm);
 const can=k=>SES.role==='admin'||!!perm[k];   // Admin luôn đủ quyền để không tự khóa mình
-const allowed=v=>v==='me'||can(v);            // "Trang của tôi" luôn xem được, không phụ thuộc phân quyền
+const allowed=v=>v==='me'?!['admin','boss'].includes(SES.role):can(v);   // "Trang của tôi" ẩn với Admin/Sếp (họ đã xem được mọi nơi khác), vẫn hiện với Quản lý và Nhân viên
 const isMgr=can('seeAll'),canSwitch=can('switch'),canAudit=can('audit'),canAdmin=can('admin');
 
 // Gọi mỗi 15 giây: nếu bị khóa/xóa → đăng xuất; nếu vai trò hoặc quyền bị đổi → tải lại để áp dụng ngay
@@ -317,6 +317,20 @@ const decorateShift=()=>document.querySelectorAll('.person-row').forEach(row=>{
     const tag=cur?(m.active?'● Đang làm':'⏸ Đang tạm dừng'):t.status==='done'?'✓ Hoàn thành':'';if(tag)el.querySelector('small').textContent+=' · '+tag});
 });
 const rtShift=renderTeam;renderTeam=()=>{rtShift();decorateShift();paintWorked()};
+
+/* ---- Trang "Tiến độ công việc": Nhân viên chỉ xem việc của CHÍNH MÌNH ----
+   Hàm renderTasks() gốc nằm ngoài IIFE này nên không "nhìn thấy" SES/isMgr,
+   vì vậy ta bọc lại bằng cách tạm lọc data.tasks trước khi gọi hàm gốc, rồi
+   khôi phục lại ngay sau đó để không ảnh hưởng tới các trang khác. Quản lý,
+   Admin, Sếp (có quyền "seeAll") vẫn thấy đầy đủ như cũ. */
+const rTasksFull=renderTasks;
+renderTasks=()=>{
+  if(isMgr){rTasksFull();return}
+  const full=data.tasks;
+  data.tasks=full.filter(t=>t.assignee===SES.member);
+  rTasksFull();
+  data.tasks=full;
+};
 const reShift=renderEmployees;
 renderEmployees=()=>{reShift();document.querySelectorAll('.employee-card').forEach((c,i)=>{const m=data.members[i],l=c.querySelector('.employee-live');if(!m||!l)return;
   const w=hms(worked(m));  // cùng công thức với trang Nhân sự: giờ cộng dồn cả ngày
